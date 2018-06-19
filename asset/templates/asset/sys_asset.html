@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}系统资产{% endblock%}
+
+{% block links %}
+
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.bootstrap.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.responsive.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.tableTools.min.css') }}" rel="stylesheet" />
+
+{% endblock %}
+
+{% block nav_asset %}active{% endblock %}
+{% block nav_asset_sys %}active{% endblock %}
+
+{% block body %}
+<table class="table table-striped table-bordered table-hover sys_asset">
+    <thead>
+        <tr>
+            <th class="col-md-2">IP</th>
+            <th class="col-md-3">操作系统</th>
+            <th class="col-md-4">应用</th>
+            <th class="col-md-1">发现时间</th>
+            <th class="col-md-1">最后发现时间</th>
+            <th class="col-md-1">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.ip }}</td>
+            <td>{{ asset.os }}</td>
+            <td>
+                <ul>
+                {% for app in asset.applications %}
+                    <li> # {{ app.port }} # {{ app.name }} # {{ app.protocol }} # {{ app.version }} # {{ app.product }} # </li>
+                {% endfor %}
+                </ul>
+            </td>
+            <td>{{ asset.created_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ asset.last_discove_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+                <button class="btn btn-primary btn-xs btn-report" title="查看漏洞" data-toggle="tooltip" data-placement="bottom" data-id="{{ asset.ip }}" type="button"><i class="fa fa-list"></i></button>
+                <button class="btn btn-primary btn-xs btn-danger btn-delete" title="删除" data-toggle="tooltip" data-placement="bottom" data-id="{{ asset.id }}" type="button"><i class="fa fa-trash-o"></i></button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/plugins/dataTables/jquery.dataTables.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.bootstrap.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.responsive.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.tableTools.min.js') }}"></script>
+{% endblock %}
+
+
+{% block dialogs %}
+<div class="modal inmodal fade" id="report-vul-dialog" tabindex="-1" role="dialog"  aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">查看漏洞</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>插件</th>
+                            <th>payloads</th>
+                            <th>发现时间</th>
+                        </tr>
+                    </thead>
+                    <tbody class="report-vul-tbody">
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+var table = jQuery('.sys_asset').DataTable({
+    language : {
+        url : "{{ url_for('static', filename='json/datatable.zh_CN.json') }}"
+    },
+    drawCallback : function () {
+        jQuery('button[data-toggle="tooltip"]').tooltip();
+    }
+});
+
+
+jQuery('#report-vul-dialog').on('show.bs.modal', function (event) {
+    var dialog = jQuery(this);
+    var button = jQuery(event.relatedTarget);
+    if(jQuery.type(button.data('id')) != 'undefined') {
+        ajax({
+            url : "{{ url_for('vul.list_report_sys_vul') }}",
+            data : {'key' : button.data('id')},
+            success: function(result) {
+                var tbody = dialog.find('tbody.report-vul-tbody');
+                tbody.empty();
+                jQuery.each(result, function(i, v) {
+                    var ident = v['plugin_ident'],
+                        payloads = v['payloads'],
+                        created_time = v['created_time'];
+                    if(-1 != jQuery.inArray(jQuery.type(payloads), ['array', 'object'])) {
+                        payloads = JSON.stringify(payloads);
+
+                    }
+                    payloads = payloads.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                    tbody.append('<tr><td>' + ident + '</td><td>' + payloads + '</td><td>' + created_time + '</td></tr>')
+                });
+            }
+        });
+    }
+})
+
+jQuery(document).on('click', 'button.btn-report', function() {
+    jQuery('#report-vul-dialog').modal('show', jQuery(this));
+});
+{% endblock %}

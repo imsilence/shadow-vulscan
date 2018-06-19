@@ -1,0 +1,209 @@
+{% extends 'layout.html' %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block nav_dashboard %}active{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <span class="label label-success pull-right">最近24小时新增</span>
+                <h5>资产数量</h5>
+            </div>
+            <div class="ibox-content">
+                <h1 class="no-margins">{{ stats.asset.total }}</h1>
+                <div class="stat-percent font-bold text-success">{{ stats.asset['24_hour'] }}<i class="fa fa-level-up"></i></div>
+                <small></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <span class="label label-info pull-right">最近24小时新增</span>
+                <h5>应用(端口)数量</h5>
+            </div>
+            <div class="ibox-content">
+                <h1 class="no-margins">{{ stats.app.total }}</h1>
+                <div class="stat-percent font-bold text-info">{{ stats.app['24_hour'] }}<i class="fa fa-level-up"></i></div>
+                <small></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <span class="label label-danger pull-right">最近24小时新增</span>
+                <h5>漏洞数量</h5>
+            </div>
+            <div class="ibox-content">
+                <h1 class="no-margins">{{ stats.vul.total }}</h1>
+                <div class="stat-percent font-bold text-danger">{{ stats.vul['24_hour'] }}<i class="fa fa-level-up"></i></div>
+                <small></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <span class="label label-primary pull-right">在线</span>
+                <h5>执行器数量</h5>
+            </div>
+            <div class="ibox-content">
+                <h1 class="no-margins">{{ stats.executor.total }}</h1>
+                <div class="stat-percent font-bold text-primary">{{ stats.executor.online }}<i class="fa fa-heart"></i></div>
+                <small></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>插件统计 TOP 10</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="display: block;">
+                        <table class="table table-hover table-condensed tabel-striped">
+                            <thead>
+                                <tr>
+                                    <th>插件标识</th>
+                                    <th>发现漏洞资产数量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vul in stats.stats_vul_host %}
+                                <tr>
+                                    <td>{{ vul.plugin_ident }}</td>
+                                    <td>{{ vul.count }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="2">暂无数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>资产统计 TOP 10</h5>
+                        <div class="ibox-tools">
+                            <a class="collapse-link">
+                                <i class="fa fa-chevron-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ibox-content" style="display: block;">
+                        <table class="table table-hover table-condensed tabel-striped">
+                            <thead>
+                                <tr>
+                                    <th>资产</th>
+                                    <th>发现漏洞数量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in stats.stats_host_vul %}
+                                <tr>
+                                    <td>{{ asset.ip }}</td>
+                                    <td>{{ asset.count }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="2">暂无数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>应用(端口)统计</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content" style="display: block;">
+                 <div id="app-charts" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='vendor/echarts/echarts.min.js') }}"></script>
+{% endblock %}
+
+{% block js %}
+var chart = echarts.init(document.getElementById('app-charts'));
+var stats_port = {{ stats.stats_port|safe}};
+var stats_port_infos = [];
+var stats_port_counts = [];
+jQuery.each(stats_port, function(i, v) {
+    stats_port_infos.push(v['port']);
+    stats_port_counts.push(v['count']);
+});
+
+var option = {
+    color: ['#3398DB'],
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis : [
+        {
+            name : '端口号',
+            type : 'category',
+            data : stats_port_infos,
+            axisTick: {
+                alignWithLabel: true
+            }
+        }
+    ],
+    yAxis : [
+        {
+            name : '资产数量',
+            type : 'value'
+        }
+    ],
+    series : [
+        {
+            name:'资产数量',
+            type:'bar',
+            barWidth: '60%',
+            data: stats_port_counts
+        }
+    ]
+};
+
+chart.setOption(option);
+{% endblock %}

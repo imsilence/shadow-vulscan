@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Shadow</title>
+
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='font-awesome/css/font-awesome.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='css/plugins/toastr/toastr.min.css') }}" rel="stylesheet">
+
+        <link href="{{ url_for('static', filename='css/animate.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+        <style type="text/css">
+            .middle-box h1 {
+                font-size: 75px;
+            }
+        </style>
+    </head>
+    <body class="gray-bg">
+        <div class="middle-box text-center loginscreen animated fadeInDown">
+            <div>
+                <div>
+                    <h1 class="logo-name">SHADOW</h1>
+                </div>
+                <h3>用户登录</h3>
+                <form class="m-t login" role="form" action="{{ url_for('auth.login', next=request.args.next ) }}" method="POST" novalidate="novalidate">
+                    <div class="form-group">
+                        <input type="name" class="form-control" placeholder="用户名/邮箱" name="name" value="{{ name }}" autocomplete="no" required="">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" placeholder="密码" name="password" value="" autocomplete="no" required="">
+                    </div>
+                    <button type="button" class="btn btn-primary block full-width m-b login">登录</button>
+                </form>
+                <p class="m-t"> <small>Shadow &copy; 2018</small> </p>
+            </div>
+        </div>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-2.1.1.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/toastr/toastr.min.js') }}"></script>
+            <script type="text/javascript" src="{{ url_for('static', filename='js/requests.js') }}"></script>
+
+        <script type="text/javascript">
+            jQuery(document).ready(function() {
+                jQuery('button.login').on('click', function() {
+                    toastr.clear();
+                    ajax({
+                        url : "{{ url_for('auth.login', next=request.args.next ) }}",
+                        data : jQuery('form.login').serializeArray(),
+                        success : function(result) {
+                            var next = result['next'] || '/';
+                            window.location.replace(next);
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

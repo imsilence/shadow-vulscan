@@ -1,0 +1,278 @@
+{% extends "layout.html" %}
+
+{% block title %}系统插件{% endblock%}
+
+{% block style %}
+.btn-control {
+    margin-bottom : 8px;
+}
+{% endblock %}
+
+{% block nav_vul %}active{% endblock %}
+{% block nav_vul_sys_plugin %}active{% endblock %}
+
+{% block body %}
+<div>
+    <a class="btn btn-primary btn-control" data-toggle="modal" data-target="#plugin-dialog" data-backdrop="static" data-keyboard="false">新建插件</a>
+</div>
+<table class="table table-striped table-bordered table-hover plugin" width="100%">
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>标识</th>
+            <th>风险级别</th>
+            <th>类型</th>
+            <th>备注</th>
+            <th>创建时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block dialogs %}
+<div class="modal inmodal fade" id="plugin-dialog" tabindex="-1" role="dialog"  aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">新建插件</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="form-plugin">
+                    <input type="hidden" name="id" value=""/>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">名称</label>
+                        <div class="col-lg-10">
+                            <input type="text" placeholder="名称" class="form-control" name="name" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">标识</label>
+                        <div class="col-lg-10">
+                            <input type="text" placeholder="标识" class="form-control" name="ident" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">风险级别</label>
+                        <div class="col-lg-10">
+                            <select class="form-control" name="level">
+                                <option value="10">高</option>
+                                <option value="6">中</option>
+                                <option value="1">低</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">类型</label>
+                        <div class="col-lg-10">
+                            <select class="form-control" name="type">
+                                <option value="http_request" selected="selected">http/https请求</option>
+                                <option value="socket_request">socket请求</option>
+                                <option value="script">脚本</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">参数</label>
+                        <div class="col-lg-10">
+                            <textarea class="form-control" rows="3" name="params" placeholder="参数" style="resize:none"></textarea>
+                            <span class="help-block m-b-none">请输入json格式字符串, value若为配置的键, 在运行过程中进行替换</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">备注</label>
+                        <div class="col-lg-10">
+                            <textarea class="form-control" rows="2" name="remark" placeholder="备注" style="resize:none"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">相关链接</label>
+                        <div class="col-lg-10">
+                            <textarea class="form-control" rows="2" name="links" placeholder="相关链接" style="resize:none"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary btn-plugin-save">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block js %}
+jQuery.fn.dataTable.ext.errMode = 'throw';
+
+var table = jQuery('.plugin').DataTable({
+    dom : '<"clear">lfrtip',
+    ajax : {
+        url : "{{ url_for('vul.list_sys_vul_plugin') }}",
+        dataSrc : "result"
+    },
+    columns : [
+        {
+            data : function(row, type, full, meta) {
+                return '[' + row['id'] +']' + row['name'];
+            }
+        },
+        { data : 'ident' },
+        {
+            data : 'level',
+            render : function(data, type, full, meta) {
+                var levels = {
+                    10 : '高',
+                    6 : '中',
+                    1 : '低',
+                };
+                return levels[data];
+            }
+        },
+        { data: 'type' },
+        { data: 'remark' },
+        { data: 'created_time' },
+        {
+            data: function(row, type, full, meta) {
+                var buttons = [
+                    '<button class="btn btn-primary btn-xs btn-report" title="查看" data-toggle="tooltip" data-placement="bottom" data-id="{0}" type="button"><i class="fa fa-list"></i></button>',
+                    '<button class="btn btn-primary btn-xs btn-danger btn-delete" title="删除" data-toggle="tooltip" data-placement="bottom" data-id="{0}" type="button"><i class="fa fa-trash-o"></i></button>',
+                ];
+                return buttons.join('  ').replace(/\{0\}/gm, row['id']);
+            }
+        }
+    ],
+    drawCallback : function () {
+        jQuery('button[data-toggle="tooltip"]').tooltip();
+    },
+    language : {
+        url : "{{ url_for('static', filename='json/datatable.zh_CN.json') }}"
+    }
+});
+
+function reload_table() {
+    table.ajax.reload(function() {
+        jQuery('button[data-toggle="tooltip"]').tooltip();
+    }, false);
+}
+
+var validator = jQuery("#form-plugin").validate({
+    rules: {
+        name: {
+            required: true,
+            rangelength: [3, 32],
+        },
+        ident: {
+             required: true,
+             regex: /^[0-9a-zA-Z_]+$/,
+             maxlength: 64
+        },
+        level: {
+            required: true,
+            digits: true,
+            range: [1, 10],
+        },
+        params: {
+            required: true,
+            json: true
+        },
+        remark : {
+            maxlength: 128
+        },
+        links : {
+            maxlength: 128
+        }
+    },
+    submitHandler : function(form){
+        ajax({
+            url : "{{ url_for('vul.save_sys_vul_plugin') }}",
+            data : jQuery(form).serializeArray(),
+            success : function(result) {
+                toastr.clear();
+                toastr.success('操作成功');
+                reload_table();
+                jQuery('#plugin-dialog').modal('hide');
+            }
+        });
+    }
+});
+
+jQuery('#plugin-dialog').on('show.bs.modal', function (event) {
+    document.getElementById('form-plugin').reset();
+    validator.resetForm();
+
+    var dialog = jQuery(this);
+    dialog.find('h4.modal-title').text('新建插件');
+    dialog.find('input[name="id"]').val('');
+
+    var button = jQuery(event.relatedTarget);
+
+    if(jQuery.type(button.data('id')) != 'undefined') {
+        var inputs = {
+            'input' : ['id', 'name', 'ident', ],
+            'select' : ['level', 'type'],
+            'textarea' : ['params', 'remark', 'links'],
+        };
+        ajax({
+            url : "{{ url_for('vul.report_sys_vul_plugin') }}",
+            data : {'id' : button.data('id')},
+            success: function(result) {
+                dialog.find('h4.modal-title').text('更新插件');
+                jQuery.each(inputs, function(key, value) {
+                    jQuery.each(value, function(i, v) {
+                        var text = result[v];
+                        if(-1 != jQuery.inArray(jQuery.type(text), ['array', 'object'])) {
+                            text = JSON.stringify(text);
+                        }
+                        dialog.find(key + '[name="' + v + '"]').val(text);
+                    });
+                });
+            }
+        });
+    }
+});
+
+
+jQuery('.btn-plugin-save').on('click', function() {
+    jQuery('#form-plugin').submit();
+});
+
+jQuery(document).on('click', '.btn-report', function() {
+    jQuery('#plugin-dialog').modal('show', jQuery(this));
+});
+
+
+jQuery(document).on('click', '.btn-delete', function() {
+    var id = jQuery(this).data('id');
+    swal({
+            title: "确认删除插件?",
+            text: "",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "确认",
+            cancelButtonText: "取消",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        },
+        function () {
+            ajax({
+                url : "{{ url_for('vul.delete_sys_vul_plugin') }}",
+                data : {'id' : id},
+                success : function(result) {
+                    toastr.clear();
+                    swal.close();
+                    toastr.success('操作成功');
+                    reload_table();
+                }
+            });
+        });
+});
+setInterval(function() {
+    reload_table();
+}, 15 * 1000);
+{% endblock %}

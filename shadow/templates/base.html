@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{% block title %}Shadow{% endblock %}</title>
+
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='font-awesome/css/font-awesome.css') }}" rel="stylesheet" />
+
+        <link href="{{ url_for('static', filename='css/plugins/toastr/toastr.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.bootstrap.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.responsive.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.tableTools.min.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='css/plugins/sweetalert/sweetalert.css') }}" rel="stylesheet" />
+
+
+        {% block links %}{% endblock %}
+
+        <link href="{{ url_for('static', filename='css/animate.css') }}" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
+
+        <style type="text/css">
+            .img-logo {
+                width: 160px;
+            }
+            .fh-breadcrumb {
+                height: calc(100% - 100px);
+            }
+            {% block style %}{% endblock %}
+        </style>
+    </head>
+    <body class="no-skin-config full-height-layout">
+        <div id="wrapper">
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                <div class="sidebar-collapse">
+                    <ul class="nav metismenu" id="side-menu">
+                        <li class="nav-header">
+                            <div class="dropdown profile-element">
+                                <span>
+                                    <img alt="image" class="img-circle img-logo" src="{{ url_for('static', filename='img/logo.png') }}" />
+                                </span>
+                            </div>
+                            <div class="logo-element">
+                                S
+                            </div>
+                        </li>
+                        <li class="{% block nav_dashboard %}{% endblock %}">
+                            <a href="{{ url_for('dashboard.index') }}"><i class="fa fa-th-large"></i> <span class="nav-label">概览</span> </a>
+                        </li>
+                        <li class="{% block nav_asset %}{% endblock %}">
+                            <a href="javascript:void(0);"><i class="fa fa-laptop"></i> <span class="nav-label">资产管理</span> <span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level collapse">
+                                <li class="{% block nav_asset_sys %}{% endblock %}"><a href="{{ url_for('asset.sys_asset') }}">资产</a></li>
+                            </ul>
+                        </li>
+                        <li class="{% block nav_vul %}{% endblock %}">
+                            <a href="javascript:void(0);"><i class="fa fa-eye"></i> <span class="nav-label">漏洞管理</span> <span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level collapse">
+                                <li class="{% block nav_vul_sys_job %}{% endblock %}"><a href="{{ url_for('vul.sys_vul_job') }}">任务管理</a></li>
+                                <li class="{% block nav_vul_sys_plugin %}{% endblock %}"><a href="{{ url_for('vul.sys_vul_plugin') }}">插件管理</a></li>
+                                <li class="{% block nav_vul_plugin_config %}{% endblock %}"><a href="{{ url_for('vul.plugin_config') }}">插件参数配置</a></li>
+                                <li class="{% block nav_vul_mgr %}{% endblock %}"><a href="{{ url_for('vul.sys_vul') }}">漏洞信息</a></li>
+                            </ul>
+                        </li>
+                        <li class="{% block nav_sys %}{% endblock %}">
+                            <a href="javascript:void(0);"><i class="fa fa-gears"></i> <span class="nav-label">系统管理</span> <span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level collapse">
+                                <li class="{% block nav_sys_user %}{% endblock %}"><a href="{{ url_for('auth.users') }}">用户管理</a></li>
+                            </ul>
+                            <ul class="nav nav-second-level collapse">
+                                <li class="{% block nav_sys_executor %}{% endblock %}"><a href="{{ url_for('schedule.executors') }}">执行器管理</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <div id="page-wrapper" class="gray-bg">
+                <div class="row border-bottom">
+                    <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                        <div class="navbar-header">
+                            <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                        </div>
+                        <ul class="nav navbar-top-links navbar-right">
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                    <i class="fa fa-user"></i>  {{ g.user.name }}
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="javascript:void(0);" class="font-bold">修改密码</a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a href="javascript:void(0);" class="font-bold">个人设置</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('auth.logout') }}">
+                                    <i class="fa fa-sign-out"></i> 退出
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="fh-breadcrumb">
+                    {% block container %}
+                        {% block container_left %}
+                        <div class="fh-column">
+                            <div class="full-height-scroll">
+                                {% block body_nav %} {% endblock %}
+                            </div>
+                        </div>
+                        {% endblock %}
+                        {% block container_right %}
+                        <div class="full-height">
+                            <div class="full-height-scroll white-bg border-left">
+                                <div class="element-detail-box">
+                                    {% block body %} {% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endblock %}
+                    {% endblock %}
+                </div>
+                <div class="footer">
+                    <div class="pull-right">
+                        10GB of <strong>250GB</strong> Free.
+                    </div>
+                    <div>
+                        <strong>Copyright</strong> Shadow &copy; 2018
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% block dialogs %}{% endblock %}
+        <script src="{{ url_for('static', filename='js/jquery-2.1.1.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/plugins/metisMenu/jquery.metisMenu.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/plugins/slimscroll/jquery.slimscroll.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/inspinia.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/plugins/pace/pace.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/toastr/toastr.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/requests.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/dataTables/jquery.dataTables.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.bootstrap.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.responsive.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.tableTools.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/validate/jquery.validate.min.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/validators.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='js/plugins/sweetalert/sweetalert.min.js') }}"></script>
+
+
+        {% block scripts %}{% endblock %}
+        <script type="text/javascript">
+            {% block js %}{% endblock %}
+        </script>
+    </body>
+</html>

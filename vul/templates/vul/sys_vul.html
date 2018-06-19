@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}漏洞管理{% endblock%}
+
+{% block links %}
+
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.bootstrap.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.responsive.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.tableTools.min.css') }}" rel="stylesheet" />
+
+{% endblock %}
+
+{% block style %}
+.btn-control {
+    margin-bottom : 8px;
+}
+{% endblock %}
+
+{% block nav_vul %}active{% endblock %}
+{% block nav_vul_mgr %}active{% endblock %}
+
+{% block body %}
+<table class="table table-striped table-bordered table-hover users">
+    <thead>
+        <tr>
+            <th>插件名称</th>
+            <th>影响主机</th>
+            <th>payloads</th>
+            <th>发现时间</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vul in vuls %}
+        <tr>
+            <td>{{ vul.plugin_ident }}</td>
+            <td>{{ vul.ip }}</td>
+            <td>{{ vul.payloads }}</td>
+            <td>{{ vul.created_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/plugins/dataTables/jquery.dataTables.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.bootstrap.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.responsive.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.tableTools.min.js') }}"></script>
+{% endblock %}
+
+{% block js %}
+var table = jQuery('.users').DataTable({
+    language : {
+        url : "{{ url_for('static', filename='json/datatable.zh_CN.json') }}"
+    },
+    drawCallback : function () {
+        jQuery('button[data-toggle="tooltip"]').tooltip();
+    }
+});
+
+{% endblock %}

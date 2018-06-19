@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}用户管理{% endblock%}
+
+{% block links %}
+
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.bootstrap.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.responsive.css') }}" rel="stylesheet" />
+<link href="{{ url_for('static', filename='css/plugins/dataTables/dataTables.tableTools.min.css') }}" rel="stylesheet" />
+
+{% endblock %}
+
+{% block style %}
+.btn-control {
+    margin-bottom : 8px;
+}
+{% endblock %}
+
+{% block nav_sys %}active{% endblock %}
+{% block nav_sys_user %}active{% endblock %}
+
+{% block body %}
+<div>
+    <a class="btn btn-primary btn-control" data-toggle="modal" data-target="#user-dialog" data-backdrop="static" data-keyboard="false">新建用户</a>
+</div>
+<table class="table table-striped table-bordered table-hover users">
+    <thead>
+        <tr>
+            <th>名称</th>
+            <th>邮箱</th>
+            <th>创建时间</th>
+            <th>最后登录时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.created_time }}</td>
+            <td>{{ user.last_login_time }}</td>
+            <td>
+                <button class="btn btn-primary btn-xs btn-report" title="查看" data-toggle="tooltip" data-placement="bottom" data-id="{{ user.id }}" type="button"><i class="fa fa-list"></i></button>
+                <button class="btn btn-primary btn-xs btn-danger btn-delete" title="删除" data-toggle="tooltip" data-placement="bottom" data-id="{{ user.id }}" type="button"><i class="fa fa-trash-o"></i></button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/plugins/dataTables/jquery.dataTables.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.bootstrap.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.responsive.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/dataTables/dataTables.tableTools.min.js') }}"></script>
+{% endblock %}
+
+{% block js %}
+var table = jQuery('.users').DataTable({
+    language : {
+        url : "{{ url_for('static', filename='json/datatable.zh_CN.json') }}"
+    },
+    drawCallback : function () {
+        jQuery('button[data-toggle="tooltip"]').tooltip();
+    }
+});
+
+{% endblock %}
